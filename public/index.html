@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ApexCommerce REST Suite — E-Commerce Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <a href="#" class="brand">
+      <span class="brand-icon">⚡</span>
+      <span class="brand-title">ApexCommerce</span>
+      <span class="brand-badge">REST API Suite</span>
+    </a>
+
+    <!-- Role Switcher -->
+    <div class="role-switcher-container">
+      <span class="role-label">Active Role:</span>
+      <button class="role-btn active" data-role="Customer" onclick="switchRole('Customer')">👤 Customer (Alice)</button>
+      <button class="role-btn seller" data-role="Seller" onclick="switchRole('Seller')">🏪 Seller (ElectroTech)</button>
+      <button class="role-btn admin" data-role="Admin" onclick="switchRole('Admin')">🛡️ Admin (System)</button>
+      <button class="role-btn" data-role="Guest" onclick="switchRole('Guest')">🚫 Guest (Unauth)</button>
+    </div>
+
+    <!-- Cart Button -->
+    <button class="cart-toggle-btn" onclick="openTab('cart')">
+      <span>🛒 Cart</span>
+      <span class="cart-badge" id="cart-count">0</span>
+    </button>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="openTab('storefront')">🛍️ Storefront</button>
+    <button class="tab-btn" onclick="openTab('cart')">🛒 Cart & Checkout</button>
+    <button class="tab-btn" onclick="openTab('orders')">📦 Order Tracker</button>
+    <button class="tab-btn" onclick="openTab('seller')">📊 Seller Dashboard</button>
+    <button class="tab-btn" onclick="openTab('admin')">📈 Admin Analytics</button>
+    <button class="tab-btn" onclick="openTab('api-tester')">⚡ API Inspector</button>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- 1. Storefront Tab -->
+    <section id="tab-storefront" class="tab-content active">
+      <div class="filter-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Search iPhone, MacBook, Jacket, Shoes..." oninput="debounceSearch()">
+        </div>
+        <div class="category-pills" id="category-pills">
+          <button class="category-pill active" onclick="filterCategory('')">All Products</button>
+        </div>
+      </div>
+
+      <div class="product-grid" id="product-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">Loading products...</div>
+      </div>
+    </section>
+
+    <!-- 2. Cart & Checkout Tab -->
+    <section id="tab-cart" class="tab-content">
+      <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;">Shopping Cart & Checkout</h2>
+      <div class="cart-view-container">
+        <!-- Cart Items List -->
+        <div class="cart-items-panel">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.1rem;">Cart Items</h3>
+            <button onclick="clearUserCart()" style="background: transparent; border: none; color: var(--danger); cursor: pointer; font-size: 0.85rem;">Clear Cart</button>
+          </div>
+          <div id="cart-items-list">
+            <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Your cart is empty.</p>
+          </div>
+        </div>
+
+        <!-- Checkout Summary -->
+        <div class="checkout-summary-panel">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Order Summary</h3>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--text-secondary);">
+            <span>Subtotal</span>
+            <span id="cart-subtotal">₹0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--success);" id="discount-row" style="display:none;">
+            <span>Discount Applied</span>
+            <span id="cart-discount">-₹0</span>
+          </div>
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1rem 0;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 800;">
+            <span>Final Total</span>
+            <span id="cart-total" style="color: #38bdf8;">₹0</span>
+          </div>
+
+          <!-- Coupon Box -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Apply Promo Coupon</label>
+            <div style="display: flex; gap: 0.5rem;">
+              <input type="text" id="coupon-input" placeholder="e.g. WELCOME10" style="flex:1; padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: white;">
+              <button onclick="applyEnteredCoupon()" style="padding: 0.5rem 0.9rem; background: var(--primary); border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: 600;">Apply</button>
+            </div>
+            <div class="coupon-test-chips">
+              <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Try:</span>
+              <button class="chip-btn" onclick="useCouponChip('WELCOME10')">WELCOME10 (10% Off)</button>
+              <button class="chip-btn" onclick="useCouponChip('FLAT500')">FLAT500 (₹500 Off)</button>
+              <button class="chip-btn" onclick="useCouponChip('EXPIRED50')" title="Click to test business rule rejection">EXPIRED50 (Expired)</button>
+            </div>
+          </div>
+
+          <!-- Checkout Form -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Shipping Address</label>
+            <input type="text" id="ship-street" value="12 Maple Street, Boston, MA" style="width: 100%; padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: white; margin-bottom: 0.5rem;">
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Payment Mode</label>
+            <select id="payment-mode" style="width: 100%; padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: white;">
+              <option value="CARD">Credit / Debit Card</option>
+              <option value="COD">Cash on Delivery (COD)</option>
+              <option value="UPI">UPI / Instant Pay</option>
+            </select>
+          </div>
+
+          <button onclick="checkoutOrder()" class="add-cart-btn" id="btn-checkout" style="width: 100%; padding: 0.85rem;">
+            🚀 Place Order (Atomic Checkout)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Order Workflow Tracker Tab -->
+    <section id="tab-orders" class="tab-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h2 style="font-size: 1.5rem;">Order Lifecycle & State Machine Tracker</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Strict transitions: Placed ➔ Confirmed ➔ Shipped ➔ Delivered. Any invalid skip will be rejected.</p>
+        </div>
+        <button onclick="fetchOrders()" style="background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); color: white; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer;">🔄 Refresh</button>
+      </div>
+
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow-x: auto;">
+        <table class="custom-table" id="orders-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Workflow Transition Actions</th>
+            </tr>
+          </thead>
+          <tbody id="orders-list">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading orders...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. Seller Dashboard Tab -->
+    <section id="tab-seller" class="tab-content">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem;">Seller Performance Analytics</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Isolated sales KPIs and low-stock alarms for ElectroTech.</p>
+      </div>
+
+      <div class="metrics-grid" id="seller-metrics">
+        <div class="metric-card"><div class="metric-label">Total Products</div><div class="metric-val" id="seller-products">--</div></div>
+        <div class="metric-card"><div class="metric-label">Total Revenue</div><div class="metric-val" id="seller-revenue">--</div></div>
+        <div class="metric-card"><div class="metric-label">Units Sold</div><div class="metric-val" id="seller-units">--</div></div>
+        <div class="metric-card"><div class="metric-label">Pending Orders</div><div class="metric-val" id="seller-pending">--</div></div>
+        <div class="metric-card" style="border-color: rgba(245, 158, 11, 0.4);"><div class="metric-label">Low Stock Alarms</div><div class="metric-val" style="color: #fbbf24;" id="seller-lowstock">--</div></div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Low Stock Alerts (Stock ≤ Threshold)</h3>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); overflow-x: auto; margin-bottom: 2rem;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Remaining Stock</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="seller-lowstock-table">
+            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading low-stock products...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. Admin Analytics Tab -->
+    <section id="tab-admin" class="tab-content">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.5rem;">Platform Executive Analytics</h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Global platform aggregation pipelines across users, sales, and products.</p>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card"><div class="metric-label">Total Platform Users</div><div class="metric-val" id="admin-users">--</div></div>
+        <div class="metric-card"><div class="metric-label">Catalog Products</div><div class="metric-val" id="admin-products">--</div></div>
+        <div class="metric-card"><div class="metric-label">Completed Orders</div><div class="metric-val" id="admin-orders">--</div></div>
+        <div class="metric-card"><div class="metric-label">Platform Gross Revenue</div><div class="metric-val" id="admin-revenue" style="color: #34d399;">--</div></div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.25rem;">
+          <h3 style="font-size: 1.05rem; margin-bottom: 1rem;">Category Distribution</h3>
+          <div id="admin-category-dist">Loading...</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.25rem;">
+          <h3 style="font-size: 1.05rem; margin-bottom: 1rem;">Payment Method Breakdown</h3>
+          <div id="admin-payment-breakdown">Loading...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. API Inspector Tab -->
+    <section id="tab-api-tester" class="tab-content">
+      <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Interactive REST API Inspector</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Execute live API endpoints directly and inspect HTTP status codes and responses.</p>
+      
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+        <button class="chip-btn" onclick="testEndpoint('GET', '/api/health')">GET /api/health</button>
+        <button class="chip-btn" onclick="testEndpoint('GET', '/api/products')">GET /api/products</button>
+        <button class="chip-btn" onclick="testEndpoint('GET', '/api/categories?format=tree')">GET /api/categories (Tree)</button>
+        <button class="chip-btn" onclick="testEndpoint('GET', '/api/seller/dashboard')">GET /api/seller/dashboard</button>
+        <button class="chip-btn" onclick="testEndpoint('GET', '/api/admin/reports/overview')">GET /api/admin/reports/overview</button>
+        <button class="chip-btn" onclick="testEndpoint('GET', '/api/admin/reports/sales')">GET /api/admin/reports/sales</button>
+      </div>
+
+      <div style="background: #0d1117; border: 1px solid var(--border-color); border-radius: var(--radius); padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-family: var(--font-mono); font-size: 0.85rem;">
+          <span id="api-request-info">Endpoint: None</span>
+          <span id="api-status-info" style="color: var(--accent);">Status: --</span>
+        </div>
+        <pre id="api-response-body" style="font-family: var(--font-mono); font-size: 0.82rem; color: #a5b4fc; max-height: 400px; overflow-y: auto; white-space: pre-wrap;">Select an endpoint above to view real-time backend JSON response.</pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Review Modal -->
+  <div id="review-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; justify-content: center; align-items: center;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius); padding: 2rem; max-width: 500px; width: 90%;">
+      <h3 id="review-product-title" style="margin-bottom: 0.5rem;">Review Product</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.25rem;">Note: Review will only succeed if you have a delivered order containing this product!</p>
+
+      <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Rating (1 to 5 Stars)</label>
+      <select id="review-rating" style="width: 100%; padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: white; margin-bottom: 1rem;">
+        <option value="5">⭐⭐⭐⭐⭐ (5 Stars - Exceptional)</option>
+        <option value="4">⭐⭐⭐⭐ (4 Stars - Very Good)</option>
+        <option value="3">⭐⭐⭐ (3 Stars - Average)</option>
+        <option value="2">⭐⭐ (2 Stars - Below Average)</option>
+        <option value="1">⭐ (1 Star - Poor)</option>
+      </select>
+
+      <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Your Comments</label>
+      <textarea id="review-comment" rows="4" placeholder="Write your authentic feedback..." style="width: 100%; padding: 0.5rem; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 6px; color: white; margin-bottom: 1.5rem;"></textarea>
+
+      <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+        <button onclick="closeReviewModal()" style="padding: 0.5rem 1rem; background: transparent; border: 1px solid var(--border-color); color: white; border-radius: 6px; cursor: pointer;">Cancel</button>
+        <button onclick="submitReviewForm()" style="padding: 0.5rem 1.2rem; background: var(--primary); border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: 600;">Submit Verified Review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

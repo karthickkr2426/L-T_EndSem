@@ -1,0 +1,537 @@
+{
+  "info": {
+    "_postman_id": "9b12a84c-3e11-4f81-bf43-e83c21a4f001",
+    "name": "E-Commerce Backend REST API",
+    "description": "Comprehensive Postman Collection covering all 14 modules of the E-Commerce Backend REST API with automated test scripts, environment token management, and negative edge case validation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5001/api",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "seller1Token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "seller2Token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "customerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleProductId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleOrderId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"password\": \"Customer@123\",\n  \"role\": \"Customer\",\n  \"address\": {\n    \"street\": \"456 Elm St\",\n    \"city\": \"Denver\",\n    \"state\": \"Colorado\",\n    \"zipCode\": \"80201\",\n    \"country\": \"USA\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Register Duplicate Email (Edge Case 409)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Duplicate Jane\",\n  \"email\": \"customer1@example.com\",\n  \"password\": \"Customer@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login as Admin (Stores adminToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data.token) {",
+                  "  pm.collectionVariables.set('adminToken', res.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Seller 1 (Stores seller1Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data.token) {",
+                  "  pm.collectionVariables.set('seller1Token', res.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"seller1@example.com\",\n  \"password\": \"Seller@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login as Customer 1 (Stores customerToken)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data.token) {",
+                  "  pm.collectionVariables.set('customerToken', res.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer1@example.com\",\n  \"password\": \"Customer@123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Login with Invalid Password (Edge Case 401)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer1@example.com\",\n  \"password\": \"WrongPassword!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Authorization & RBAC Edge Cases",
+      "item": [
+        {
+          "name": "Access Protected Route Without JWT (Expect 401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/cart", "host": ["{{baseUrl}}"], "path": ["cart"] }
+          }
+        },
+        {
+          "name": "Customer Accessing Admin Reports (Expect 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/reports/overview", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "overview"] }
+          }
+        },
+        {
+          "name": "Customer Accessing Seller Dashboard (Expect 403)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/seller/dashboard", "host": ["{{baseUrl}}"], "path": ["seller", "dashboard"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Category Management",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "Get Categories Tree Hierarchy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/categories?format=tree", "host": ["{{baseUrl}}"], "path": ["categories"], "query": [{ "key": "format", "value": "tree" }] }
+          }
+        },
+        {
+          "name": "Create Category (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Home & Kitchen\",\n  \"parentCategoryId\": null\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/categories", "host": ["{{baseUrl}}"], "path": ["categories"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Products & Catalog",
+      "item": [
+        {
+          "name": "Search & Filter Products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data.products.length > 0) {",
+                  "  pm.collectionVariables.set('sampleProductId', res.data.products[0]._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products?search=iPhone&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "search", "value": "iPhone" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Product By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/products/{{sampleProductId}}", "host": ["{{baseUrl}}"], "path": ["products", "{{sampleProductId}}"] }
+          }
+        },
+        {
+          "name": "Create Product (Seller)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller1Token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wireless Noise-Cancelling Headphones\",\n  \"description\": \"Active noise cancellation with 40-hour battery life and spatial audio.\",\n  \"price\": 299,\n  \"categoryId\": \"6aa0112d8c5938f4e1df2c44\",\n  \"stock\": 15,\n  \"images\": [\"https://images.unsplash.com/photo-1505740420928-5e560c06d30e\"]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products", "host": ["{{baseUrl}}"], "path": ["products"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Shopping Cart Management",
+      "item": [
+        {
+          "name": "Get Customer Cart",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/cart", "host": ["{{baseUrl}}"], "path": ["cart"] }
+          }
+        },
+        {
+          "name": "Add Product to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{sampleProductId}}\",\n  \"quantity\": 1\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/cart", "host": ["{{baseUrl}}"], "path": ["cart"] }
+          }
+        },
+        {
+          "name": "Add Quantity Exceeding Stock (Edge Case 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{sampleProductId}}\",\n  \"quantity\": 9999\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/cart", "host": ["{{baseUrl}}"], "path": ["cart"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Coupons & Discounts",
+      "item": [
+        {
+          "name": "Apply Valid Coupon (WELCOME10)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"WELCOME10\",\n  \"orderAmount\": 2000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/coupons/apply", "host": ["{{baseUrl}}"], "path": ["coupons", "apply"] }
+          }
+        },
+        {
+          "name": "Apply Expired Coupon (Edge Case 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"EXPIRED50\",\n  \"orderAmount\": 1000\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/coupons/apply", "host": ["{{baseUrl}}"], "path": ["coupons", "apply"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Orders & Workflow Transitions",
+      "item": [
+        {
+          "name": "Place Order (Checkout)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data.order) {",
+                  "  pm.collectionVariables.set('sampleOrderId', res.data.order._id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"shippingAddress\": {\n    \"street\": \"12 Maple St\",\n    \"city\": \"Boston\",\n    \"state\": \"MA\",\n    \"zipCode\": \"02108\",\n    \"country\": \"USA\"\n  },\n  \"paymentMode\": \"CARD\",\n  \"couponCode\": \"WELCOME10\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          }
+        },
+        {
+          "name": "Get Orders List",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] }
+          }
+        },
+        {
+          "name": "Valid Status Transition (Placed -> Confirmed)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller1Token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Confirmed\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/{{sampleOrderId}}/status", "host": ["{{baseUrl}}"], "path": ["orders", "{{sampleOrderId}}", "status"] }
+          }
+        },
+        {
+          "name": "Invalid Status Transition (Edge Case 400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{seller1Token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Delivered\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/orders/{{sampleOrderId}}/status", "host": ["{{baseUrl}}"], "path": ["orders", "{{sampleOrderId}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Reviews & Ratings",
+      "item": [
+        {
+          "name": "Submit Review for Delivered Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Amazing device, completely satisfied with the build and battery!\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/products/{{sampleProductId}}/reviews", "host": ["{{baseUrl}}"], "path": ["products", "{{sampleProductId}}", "reviews"] }
+          }
+        },
+        {
+          "name": "Get Product Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/products/{{sampleProductId}}/reviews", "host": ["{{baseUrl}}"], "path": ["products", "{{sampleProductId}}", "reviews"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Seller Dashboard",
+      "item": [
+        {
+          "name": "Get Seller Dashboard Metrics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{seller1Token}}" }],
+            "url": { "raw": "{{baseUrl}}/seller/dashboard", "host": ["{{baseUrl}}"], "path": ["seller", "dashboard"] }
+          }
+        },
+        {
+          "name": "Get Seller Low-Stock Alerts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{seller1Token}}" }],
+            "url": { "raw": "{{baseUrl}}/seller/products/low-stock", "host": ["{{baseUrl}}"], "path": ["seller", "products", "low-stock"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Admin Reports & Analytics",
+      "item": [
+        {
+          "name": "Get Executive Overview",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/reports/overview", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "overview"] }
+          }
+        },
+        {
+          "name": "Get Sales Trends Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/reports/sales", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "sales"] }
+          }
+        },
+        {
+          "name": "Get Product & Category Distribution",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/reports/products", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "products"] }
+          }
+        },
+        {
+          "name": "Get User Growth Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/reports/users", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "users"] }
+          }
+        },
+        {
+          "name": "Get Order Status Distribution",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": { "raw": "{{baseUrl}}/admin/reports/orders", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "orders"] }
+          }
+        }
+      ]
+    }
+  ]
+}
